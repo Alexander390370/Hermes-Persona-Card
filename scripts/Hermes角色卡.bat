@@ -1,5 +1,5 @@
 @echo off
-title Hermes è§’è‰²å¡
+title Hermes ½ÇÉ«¿¨
 setlocal enabledelayedexpansion
 
 set "HERMES=%LOCALAPPDATA%\hermes"
@@ -12,55 +12,55 @@ set "CFG=%HERMES%\config.yaml"
 cls
 echo.
 echo ============================================================
-echo    Hermes è§’è‰²å¡ï¼ˆUSER.mdï¼‰
+echo    Hermes ½ÇÉ«¿¨£¨USER.md£©
 echo ============================================================
 echo.
 if not exist "%HERMES%" (
-    echo   [æ‰¾ä¸åˆ° Hermes ç›®å½•]
+    echo   [ÕÒ²»µ½ Hermes Ä¿Â¼]
     echo   %HERMES%
     echo.
-    echo   å…ˆå®‰è£…å¹¶è¿è¡Œä¸€æ¬¡ Hermesï¼Œå†å›æ¥ã€‚
+    echo   ÏÈ°²×°²¢ÔËĞĞÒ»´Î Hermes£¬ÔÙ»ØÀ´¡£
     echo.
     pause
     goto END
 )
-echo  æ–‡ä»¶: %TARGET%
+echo  ÎÄ¼ş: %TARGET%
 echo.
-echo  è¿™å°±æ˜¯ä¸€å¼ è§’è‰²å¡ã€‚å†™ä»€ä¹ˆï¼Œå®ƒå°±æ˜¯ä»€ä¹ˆã€‚
-echo  æ¯æ¬¡è¯·æ±‚éƒ½ä¼šè¯»å®ƒï¼Œä¼˜å…ˆçº§é«˜äºç•Œé¢é‡Œçš„äººæ ¼é¢„è®¾ã€‚
+echo  Õâ¾ÍÊÇÒ»ÕÅ½ÇÉ«¿¨¡£Ğ´Ê²Ã´£¬Ëü¾ÍÊÇÊ²Ã´¡£
+echo  Ã¿´ÎÇëÇó¶¼»á¶ÁËü£¬ÓÅÏÈ¼¶¸ßÓÚ½çÃæÀïµÄÈË¸ñÔ¤Éè¡£
 echo.
-REM ---- æ˜¾ç¤ºå­—æ•°å ç”¨ ----
+REM ---- ÏÔÊ¾×ÖÊıÕ¼ÓÃ ----
 if exist "%TARGET%" (
     for %%A in ("%TARGET%") do set "FSIZE=%%~zA"
-    echo  å½“å‰ä½“ç§¯: !FSIZE! å­—èŠ‚ ^| å»ºè®®ä¸Šé™: 1375 å­—ç¬¦
+    echo  µ±Ç°Ìå»ı: !FSIZE! ×Ö½Ú ^| ½¨ÒéÉÏÏŞ: 1375 ×Ö·û
 )
 echo.
 echo ------------------------------------------------------------
-echo  å½“å‰å†…å®¹:
+echo  µ±Ç°ÄÚÈİ:
 echo ------------------------------------------------------------
 if exist "%TARGET%" (
     powershell -NoProfile -Command "$c=Get-Content -LiteralPath '%TARGET%' -Raw -Encoding UTF8; [Console]::OutputEncoding=[Text.Encoding]::GetEncoding(936); Write-Output $c" 2>nul
     if errorlevel 1 type "%TARGET%" 2>nul
 ) else (
-    echo   [æ–‡ä»¶ä¸å­˜åœ¨]
+    echo   [ÎÄ¼ş²»´æÔÚ]
 )
 echo.
 echo ------------------------------------------------------------
-echo  ç›¸å…³æ–‡ä»¶:
-if exist "%SOUL%" echo    SOUL.md    å­˜åœ¨ï¼ˆè¯´è¯é£æ ¼åº•åº§ï¼Œä¸€èˆ¬ä¸åŠ¨ï¼‰
-if exist "%CFG%"  echo    config.yaml å­˜åœ¨ï¼ˆæ¨¡å‹ä¸æ˜¾ç¤ºè®¾ç½®ï¼‰
+echo  Ïà¹ØÎÄ¼ş:
+if exist "%SOUL%" echo    SOUL.md    ´æÔÚ£¨Ëµ»°·ç¸ñµ××ù£¬Ò»°ã²»¶¯£©
+if exist "%CFG%"  echo    config.yaml ´æÔÚ£¨Ä£ĞÍÓëÏÔÊ¾ÉèÖÃ£©
 echo ------------------------------------------------------------
 echo.
-echo   [1] ç¼–è¾‘ï¼ˆè®°äº‹æœ¬ï¼Œå†™å®Œå­˜ç›˜å³å¯ï¼‰
-echo   [2] æ¸…ç©ºé‡å†™
-echo   [3] æŸ¥çœ‹å†å²å¤‡ä»½
-echo   [4] æ¢å¤å¤‡ä»½
-echo   [5] ä»ç¤ºä¾‹å¿«é€Ÿå¥—ç”¨
-echo   [6] æ‰“å¼€ Hermes é…ç½®ç›®å½•
-echo   [q] é€€å‡º
+echo   [1] ±à¼­£¨¼ÇÊÂ±¾£¬Ğ´Íê´æÅÌ¼´¿É£©
+echo   [2] Çå¿ÕÖØĞ´
+echo   [3] ²é¿´ÀúÊ·±¸·İ
+echo   [4] »Ö¸´±¸·İ
+echo   [5] ´ÓÊ¾Àı¿ìËÙÌ×ÓÃ
+echo   [6] ´ò¿ª Hermes ÅäÖÃÄ¿Â¼
+echo   [q] ÍË³ö
 echo.
 set "C="
-set /p "C=è¯·é€‰æ‹©: "
+set /p "C=ÇëÑ¡Ôñ: "
 
 if /i "!C!"=="q" goto END
 if "!C!"=="1" goto EDIT
@@ -75,16 +75,16 @@ goto MENU
 if not exist "%BAKDIR%" mkdir "%BAKDIR%" >nul 2>&1
 if exist "%TARGET%" (
     copy /y "%TARGET%" "%BAKDIR%\USER.md.bak-before-edit" >nul 2>&1
-    echo  å·²å¤‡ä»½åˆ° USER.md.bak-before-edit
+    echo  ÒÑ±¸·İµ½ USER.md.bak-before-edit
 )
 if not exist "%TARGET%" (
     type nul > "%TARGET%"
-    echo  å·²åˆ›å»ºç©º USER.md
+    echo  ÒÑ´´½¨¿Õ USER.md
 )
 start "" notepad "%TARGET%"
 echo.
-echo  å·²æ‰“å¼€è®°äº‹æœ¬ã€‚å­˜ç›˜åå…³é—­ï¼Œæ”¹åŠ¨å³ç”Ÿæ•ˆã€‚
-echo  ï¼ˆéœ€è¦æ–°å»ºä¼šè¯æ‰ä¼šè¯»å–æ–°å†…å®¹ï¼‰
+echo  ÒÑ´ò¿ª¼ÇÊÂ±¾¡£´æÅÌºó¹Ø±Õ£¬¸Ä¶¯¼´ÉúĞ§¡£
+echo  £¨ĞèÒªĞÂ½¨»á»°²Å»á¶ÁÈ¡ĞÂÄÚÈİ£©
 echo.
 pause
 goto MENU
@@ -94,12 +94,12 @@ if not exist "%BAKDIR%" mkdir "%BAKDIR%" >nul 2>&1
 if exist "%TARGET%" (
     call :STAMP
     copy /y "%TARGET%" "%BAKDIR%\USER.md.bak-before-clear-!STAMP!" >nul 2>&1
-    echo  å·²å¤‡ä»½æ—§å†…å®¹åˆ° USER.md.bak-before-clear-!STAMP!
+    echo  ÒÑ±¸·İ¾ÉÄÚÈİµ½ USER.md.bak-before-clear-!STAMP!
 )
 type nul > "%TARGET%"
 start "" notepad "%TARGET%"
 echo.
-echo  å·²æ¸…ç©ºå¹¶æ‰“å¼€è®°äº‹æœ¬ã€‚å†™å…¥ä½ æƒ³è¦çš„å†…å®¹åå­˜ç›˜ã€‚
+echo  ÒÑÇå¿Õ²¢´ò¿ª¼ÇÊÂ±¾¡£Ğ´ÈëÄãÏëÒªµÄÄÚÈİºó´æÅÌ¡£
 echo.
 pause
 goto MENU
@@ -108,13 +108,13 @@ goto MENU
 cls
 echo.
 echo ============================================================
-echo   å†å²å¤‡ä»½
+echo   ÀúÊ·±¸·İ
 echo ============================================================
 echo.
 if exist "%BAKDIR%\USER.md.bak*" (
     dir /b /o-d "%BAKDIR%\USER.md.bak*" 2>nul
 ) else (
-    echo   ï¼ˆæ²¡æœ‰å¤‡ä»½ï¼‰
+    echo   £¨Ã»ÓĞ±¸·İ£©
 )
 echo.
 pause
@@ -124,20 +124,20 @@ goto MENU
 cls
 echo.
 echo ============================================================
-echo   æ¢å¤å¤‡ä»½
+echo   »Ö¸´±¸·İ
 echo ============================================================
 echo.
 if exist "%BAKDIR%\USER.md.bak*" (
     dir /b /o-d "%BAKDIR%\USER.md.bak*" 2>nul
 ) else (
-    echo   ï¼ˆæ²¡æœ‰å¤‡ä»½å¯æ¢å¤ï¼‰
+    echo   £¨Ã»ÓĞ±¸·İ¿É»Ö¸´£©
     echo.
     pause
     goto MENU
 )
 echo.
 set "B="
-set /p "B=è¾“å…¥å¤‡ä»½æ–‡ä»¶åï¼ˆç›´æ¥å›è½¦å–æ¶ˆï¼‰: "
+set /p "B=ÊäÈë±¸·İÎÄ¼şÃû£¨Ö±½Ó»Ø³µÈ¡Ïû£©: "
 if "!B!"=="" goto MENU
 if exist "%BAKDIR%\!B!" (
     if exist "%TARGET%" (
@@ -145,11 +145,11 @@ if exist "%BAKDIR%\!B!" (
     )
     copy /y "%BAKDIR%\!B!" "%TARGET%" >nul
     echo.
-    echo  å·²æ¢å¤: !B!
-    echo  åŸå†…å®¹å·²å­˜ä¸º USER.md.bak-before-restore
+    echo  ÒÑ»Ö¸´: !B!
+    echo  Ô­ÄÚÈİÒÑ´æÎª USER.md.bak-before-restore
 ) else (
     echo.
-    echo  æ‰¾ä¸åˆ°: !B!
+    echo  ÕÒ²»µ½: !B!
 )
 echo.
 pause
@@ -159,20 +159,20 @@ goto MENU
 cls
 echo.
 echo ============================================================
-echo   ä»ç¤ºä¾‹å¿«é€Ÿå¥—ç”¨
+echo   ´ÓÊ¾Àı¿ìËÙÌ×ÓÃ
 echo ============================================================
 echo.
-echo   è¾“å…¥ç¤ºä¾‹æ–‡ä»¶è·¯å¾„ï¼ˆæŠŠ .md æ–‡ä»¶æ‹–è¿›è¿™ä¸ªçª—å£å³å¯ï¼‰
-echo   ç›´æ¥å›è½¦å–æ¶ˆ
+echo   ÊäÈëÊ¾ÀıÎÄ¼şÂ·¾¶£¨°Ñ .md ÎÄ¼şÍÏ½øÕâ¸ö´°¿Ú¼´¿É£©
+echo   Ö±½Ó»Ø³µÈ¡Ïû
 echo.
 set "T="
-set /p "T=ç¤ºä¾‹æ–‡ä»¶: "
+set /p "T=Ê¾ÀıÎÄ¼ş: "
 if "!T!"=="" goto MENU
-REM å»æ‰æ‹–æ‹½å¸¦ä¸Šçš„å¼•å·
+REM È¥µôÍÏ×§´øÉÏµÄÒıºÅ
 set "T=!T:"=!"
 if not exist "!T!" (
     echo.
-    echo  æ‰¾ä¸åˆ°æ–‡ä»¶: !T!
+    echo  ÕÒ²»µ½ÎÄ¼ş: !T!
     echo.
     pause
     goto MENU
@@ -182,9 +182,9 @@ if exist "%TARGET%" (
 )
 copy /y "!T!" "%TARGET%" >nul
 echo.
-echo  å·²å¥—ç”¨: !T!
-echo  åŸå†…å®¹å·²å­˜ä¸º USER.md.bak-before-template
-echo  ï¼ˆéœ€è¦æ–°å»ºä¼šè¯æ‰ç”Ÿæ•ˆï¼‰
+echo  ÒÑÌ×ÓÃ: !T!
+echo  Ô­ÄÚÈİÒÑ´æÎª USER.md.bak-before-template
+echo  £¨ĞèÒªĞÂ½¨»á»°²ÅÉúĞ§£©
 echo.
 pause
 goto MENU
