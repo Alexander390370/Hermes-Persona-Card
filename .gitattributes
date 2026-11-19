@@ -1,0 +1,14 @@
+# 保留 bat 文件的 GBK 编码与 CRLF，避免 Git 自动转换破坏中文
+*.bat   text eol=crlf working-tree-encoding=GBK
+*.cmd   text eol=crlf working-tree-encoding=GBK
+
+# Markdown 一律 LF
+*.md    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+
+# 二进制
+*.png   binary
+*.jpg   binary
+*.ico   binary

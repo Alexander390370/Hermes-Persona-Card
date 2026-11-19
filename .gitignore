@@ -1,0 +1,37 @@
+# Windows 通用
+Thumbs.db
+desktop.ini
+*.lnk
+
+# 用户配置文件（绝不提交）
+.env
+.env.*
+!.env.example
+auth.json
+*.lock
+
+# Hermes 运行时数据
+state.db
+state.db-*
+shared-state.db
+projects.db
+*.db-wal
+*.db-shm
+
+# 缓存与日志
+cache/
+logs/
+backups/
+*.log
+telemetry/
+
+# 角色卡本身（含个人偏好，不提交）
+memories/
+USER.md
+USER.md.bak*
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*~
