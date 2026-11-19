@@ -1,195 +1,378 @@
-# Hermes 角色卡 · 一个文件换一个人格
+# 把你电脑里的 AI 调教成任何样子 · Hermes 人格改造手册
 
-> 把 Hermes Agent 的人格当成**一张可编辑的角色卡**来管：改 `USER.md` 就是换人格，
-> 带备份、带还原、带一个双击就能用的 Windows 脚本。
-> 全部路径和参数都在 Windows 11 + Hermes Desktop 上实测过。
+> **一个文件，换一种人格。十五个内置预设，加上你自己写的那些。**
+> 附 Windows 双击就能改的角色卡脚本、记忆上限调优、九个实测坑的排错手册。
+> 全部参数在 Windows 11 + Hermes Desktop（`_config_version: 50`）上跑过。
 
 ![License](https://img.shields.io/badge/License-MIT-a08c00?style=flat)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2011-0078d4?style=flat)
-![Encoding](https://img.shields.io/badge/Encoding-GBK%20%2B%20CRLF-dc2626?style=flat)
+![Personalities](https://img.shields.io/badge/内置人格-15%20个-be123c?style=flat)
 ![Deps](https://img.shields.io/badge/Deps-zero-16a34a?style=flat)
-![Script](https://img.shields.io/badge/Script-2.5%20KB-7c3aed?style=flat)
+![Script](https://img.shields.io/badge/Script-5%20KB-7c3aed?style=flat)
 
 ![Hermes](https://img.shields.io/badge/Hermes-Desktop-4D6BFE?style=flat)
-![Persona](https://img.shields.io/badge/Persona-USER.md-be123c?style=flat)
-![Backup](https://img.shields.io/badge/Backup-auto-0d9488?style=flat)
+![Memory](https://img.shields.io/badge/Memory-双存储%20%C2%B7%20可调上限-0d9488?style=flat)
+![Persona](https://img.shields.io/badge/Persona-USER.md-c2410c?style=flat)
+![Backup](https://img.shields.io/badge/Backup-自动备份-16a34a?style=flat)
 
 ---
 
-## 这个项目解决什么问题
+## 一句话原理
 
 Hermes 有三层「人设」，**优先级从高到低**：
 
-| 优先级 | 位置 | 作用 | 能否被覆盖 |
-|---|---|---|---|
-| **1（最高）** | `%LOCALAPPDATA%\hermes\memories\USER.md` | 用户档案，每次请求都注入 | — |
-| 2 | `config.yaml` → `display.personality` | 界面里的人格预设 | 被 USER.md 覆盖 |
-| 3（最低） | 模型默认行为 | 底座模型的训练倾向 | 被以上两者覆盖 |
+```
+┌─────────────────────────────────────────────────────────┐
+│  第 1 层  USER.md            ← 最高优先，覆盖下面全部      │
+│           memories/USER.md                              │
+│           每次请求都注入，1375 字符上限                    │
+├─────────────────────────────────────────────────────────┤
+│  第 2 层  personality         ← /personality 切换         │
+│           display.personality                           │
+│           15 个内置 + 你自定义的                          │
+├─────────────────────────────────────────────────────────┤
+│  第 3 层  模型默认行为         ← 底座模型的训练倾向         │
+└─────────────────────────────────────────────────────────┘
+```
 
-**坑在这里**：很多人以为换了界面预设就改了人格，结果发现没反应——
-因为 `USER.md` 里还留着旧的两三行字，把预设压死了。
+**大多数人只改第 2 层，然后发现没反应——因为第 1 层压着。**
 
-实测案例：把 `display.personality` 从 `kawaii` 改回默认，重启 Hermes，人格**依然是 Kawai**。
-根因不在配置、不在数据库、不在 dump，就在 `USER.md` 里两句
-「User prefers kawaii mode」。
+实测案例：把 `display.personality` 从 `kawaii` 改回默认，重启，人格**纹丝不动**。
+配置、数据库、dump 全查过，都干净。最后发现 `USER.md` 里躺着两句
+`User prefers kawaii mode`。
 
-**这个仓库就是让这层变得可见、可编辑、可回滚。**
+**所以：想彻底换一个人格，第 1 层才是主战场。**
 
 ---
 
-## 核心认知
+## 三层人格，怎么用
 
-> **`USER.md` 不是"记忆"，是"角色卡"。**
+### 第 1 层：`USER.md` —— 角色卡（最强，也最容易忽略）
+
+位置：
+
+```
+%LOCALAPPDATA%\hermes\memories\USER.md
+```
+
+它是**「你是谁、怎么跟你说话」的最终解释权**。写什么就是什么，
+优先级压过界面上所有预设。
+
+**关键认知：**
+
+> `USER.md` 不是"记忆"，是"角色卡"。
 >
-> 写什么，它就是什么。它比界面里所有人格预设都硬。
+> 而且它只有 **1375 字符**（约 500 token）。写得精，别写得长。
 
-而且它很短——`user_char_limit` 默认 **1375 字符**（约 500 token）。
-所以写的每一句都得算数，写废话就是浪费上下文。
+### 第 2 层：`personality` —— 预设人格（切换最快）
+
+配置里 `display.personality`，命令行用 `/personality` 切。
+
+**15 个内置**（原文照抄，全部可用）：
+
+| # | 名称 | # | 名称 | # | 名称 |
+|---|---|---|---|---|---|
+| 1 | `helpful` | 6 | `kawaii` | 11 | `noir` |
+| 2 | `concise` | 7 | `catgirl` | 12 | `uwu` |
+| 3 | `technical` | 8 | `pirate` | 13 | `philosopher` |
+| 4 | `creative` | 9 | `shakespeare` | 14 | `hype` |
+| 5 | `teacher` | 10 | `surfer` | 15 | — |
+
+**还能自己加。** `config.yaml` 的 `agent.personalities`：
+
+```yaml
+agent:
+  personalities:
+    # 简写：一个字符串就是 system prompt
+    mentor: "You are a supportive mentor. Guide, don't lecture."
+
+    # 完整写：可以带 tone / style
+    reviewer:
+      system_prompt: "You are a meticulous code reviewer."
+      tone: "direct"
+      style: "terse"
+```
+
+**三条规则**（配置注释原文）：
+
+1. 这里写的是**新增**，或者**按名字覆盖**某个内置人格
+2. 当前选中的存在 `display.personality`，**不在这里**
+3. 也**不在** `agent.system_prompt`——那个字段是手写 system prompt 的地方
+
+```yaml
+# 生效的是这个
+display:
+  personality: 'mentor'      # 空字符串 '' = 不启用预设
+```
+
+### 第 3 层：模型本身
+
+底座模型的训练倾向。前两层都空着时才显露。
+
+**意味着**：你接 DeepSeek、Kimi、GLM、本地 9B，都可以在**同一个 `USER.md` 下**
+跑出同一个人格。**换模型不换人格**——这才是这套设计最有价值的地方。
+
+---
+
+## 这意味着一件很爽的事
+
+**你可以把自己喜欢的角色，装进任何模型里。**
+
+```
+本地 9B（免费、无审查）  ┐
+Kimi                     ├──→  同一个 USER.md  ──→  同一个人格
+DeepSeek                 │
+GLM / Qwen / Claude      ┘
+```
+
+模型负责「能力」，`USER.md` 负责「是谁」。
+显存不够就跑小模型，能力差一点，但人格一模一样。
+
+---
+
+## 记忆系统：两个存储，都有硬上限
+
+配置段（`config.yaml` → `memory`）：
+
+```yaml
+memory:
+  memory_enabled: true          # Agent 自己的笔记（MEMORY.md）
+  user_profile_enabled: true    # 用户档案（USER.md）← 角色卡
+  prefetch_spill_enabled: false # 外部预取，默认关
+  memory_char_limit: 2200       # MEMORY.md 上限，约 800 token
+  user_char_limit: 1375         # USER.md 上限，约 500 token
+  nudge_interval: 10            # 每 10 轮提醒 Agent 考虑写记忆
+```
+
+**两个存储分工：**
+
+| 文件 | 存什么 | 默认上限 | 谁写 |
+|---|---|---:|---|
+| `MEMORY.md` | 环境事实、约定、学到的东西 | 2200 字符 | Agent 自己 |
+| `USER.md` | 用户偏好、说话风格、期望 | 1375 字符 | **你 + Agent** |
+
+**注意最右边那列**：`USER.md` 是**两边都会写**的。
+
+开了 `user_profile_enabled: true`，Agent 会往里追加"学到的用户偏好"。
+跑一段时间你可能会发现角色卡被自动生成的内容塞满了——
+**这就是本仓库要做备份的原因。**
+
+---
+
+## 记忆升级：怎么把它调成你想要的样子
+
+### 想要它记得更多
+
+```yaml
+memory:
+  memory_char_limit: 4400    # 从 2200 翻倍，约 1600 token
+  user_char_limit: 2750      # 从 1375 翻倍，约 1000 token
+```
+
+**代价**：每轮对话的 system prompt 变长，等于持续吃 token。
+按 `~2.75 字符/token` 换算，翻倍大约多花 800 token 的固定开销。
+
+### 想要它别乱写你的人格
+
+```yaml
+memory:
+  user_profile_enabled: false   # 关掉，Agent 不再自动写 USER.md
+```
+
+关掉后 `USER.md` 只由你手动维护，人格更稳定。
+代价是它不会自己记住你的新偏好——得你自己写进去。
+
+### 想要它更主动记东西
+
+```yaml
+memory:
+  nudge_interval: 5      # 从 10 改成 5，每 5 轮提醒一次
+  # nudge_interval: 0    # 设 0 = 完全关掉提醒
+```
+
+实测默认 10 轮。调小会让 Agent 更频繁考虑"这值得记吗"，
+但也会多一些内部动作。
+
+### 想要清空重来
+
+```batch
+scripts\Hermes角色卡.bat
+# 选 [2] 清空重写
+```
+
+**会自动带时间戳备份**，不会覆盖旧备份。
+
+### 会话历史另有一套保留策略
+
+`state.db` 里存着所有会话、消息、工具调用。自动剪枝默认开启：
+
+```yaml
+# 默认值（注释里，需要时取消注释）
+sessions:
+  auto_prune: true            # 自动删结束的会话
+  retention_days: 90          # 保留 90 天
+  vacuum_after_prune: true    # 删完回收磁盘
+  min_vacuum_interval_days: 30
+  min_interval_hours: 24
+```
+
+**规则**（原文）：
+
+- 只删**已结束**的会话，`open` / `pinned` / 进行中的**永不删**
+- 进程异常死亡的自动化会话（cron / kanban / subagent）先被**关闭**，
+  再走一个完整保留窗口才删除
+- VACUUM 只在**两个条件同时满足**时触发：间隔够了，且可回收页超过 25%
+
+想永久保留所有会话：
+
+```yaml
+sessions:
+  auto_prune: false    # 回到 #54189 之前的行为
+```
 
 ---
 
 ## 快速开始
 
-### 方式一：双击脚本（推荐）
+### 双击脚本（推荐）
 
 ```
 scripts\Hermes角色卡.bat
 ```
 
-菜单长这样：
+菜单：
 
 ```
 ============================================================
    Hermes 角色卡（USER.md）
 ============================================================
 
- 文件: C:\Users\34246\AppData\Local\hermes\memories\USER.md
+ 文件: C:\Users\<你>\AppData\Local\hermes\memories\USER.md
 
  这就是一张角色卡。写什么，它就是什么。
  每次请求都会读它，优先级高于界面里的人格预设。
+
+ 当前体积: 61 字节 | 建议上限: 1375 字符
 
 ------------------------------------------------------------
  当前内容:
 ------------------------------------------------------------
 （这里显示你现在的角色卡）
-
 ------------------------------------------------------------
 
   [1] 编辑（记事本，写完存盘即可）
   [2] 清空重写
   [3] 查看历史备份
   [4] 恢复备份
+  [5] 从示例快速套用
+  [6] 打开 Hermes 配置目录
   [q] 退出
 ```
 
-**四个功能：**
-
-| 选项 | 做什么 | 是否自动备份 |
+| 选项 | 做什么 | 自动备份 |
 |---|---|---|
-| `1` 编辑 | 记事本打开 USER.md | ✅ `USER.md.bak-before-edit` |
-| `2` 清空重写 | 先备份再清空，然后打开记事本 | ✅ `USER.md.bak-before-clear` |
-| `3` 查看备份 | 列出所有 `.bak*` 文件 | — |
-| `4` 恢复备份 | 输入文件名还原 | — |
+| `1` 编辑 | 记事本打开 | ✅ `USER.md.bak-before-edit` |
+| `2` 清空重写 | 备份后清空 | ✅ `bak-before-clear-<时间戳>` |
+| `3` 查看备份 | 倒序列出 | — |
+| `4` 恢复备份 | 按名还原 | ✅ 恢复前先存一份 |
+| `5` 从示例套用 | 拖 `.md` 进去 | ✅ `bak-before-template` |
+| `6` 打开目录 | 资源管理器 | — |
 
-**不依赖任何东西**：不用 Python、不用 Node、不用 PowerShell 脚本。
-纯 `cmd.exe` 内置命令。
+**零依赖**：纯 `cmd.exe` 内置命令，不要 Python / Node / PowerShell 脚本。
 
-### 方式二：手动
+### 手动
 
 ```batch
 notepad "%LOCALAPPDATA%\hermes\memories\USER.md"
 ```
 
-写完后**开新会话**才读新内容（旧会话的上下文已经定死了）。
+改完**开新会话**才生效（旧会话上下文已定死）。
 
 ---
 
 ## 角色卡怎么写
 
-### 最小可用
+### 反面教材（很多人这么写）
 
 ```markdown
-你说话简短。一行问题一行答。
+你是一个非常有帮助的助手，总是尽力提供最好最专业的回答，
+在回答时保持礼貌、专业、准确……
 ```
 
-### 带身份
+**问题**：全是形容词，没有一个可执行约束。
+模型读完不知道该改什么行为。1375 字符里塞这些是纯浪费。
+
+### 正确做法：写约束，不写赞美
 
 ```markdown
-你的名字是「阿鲸」。你说话带一点海边的松弛感。
-每次回答先给结论，再给理由。
-```
-
-### 完整写法（推荐结构）
-
-```markdown
-## 身份
-你的名字是「X」。你是一个 Y。
-
 ## 说话方式
-- 先结论后细节
+- 先结论，后理由
 - 不用「好的，我来帮你」这类开场
-- 中文回答，代码和命令保持原样
+- 中文回答；代码、命令、路径、报错原文保持原样
+- 不确定就说不确定，不要编
 
 ## 边界
-- 不确定就说不确定，不要编
-- 涉及金额、删除、发布的操作，先确认
+- 删除、发布、涉及金额的操作，先说明再执行
+- 不主动扩大任务范围
 ```
 
-### 反面教材
+每一条都是**可判断是否违反**的。这才是有效约束。
 
-```markdown
-你是一个非常有帮助的助手，总是尽力提供最好最专业的回答……
-```
+### 三份现成示例
 
-**问题**：全是形容词，没有可执行约束。模型读完不知道该改什么行为。
-`user_char_limit` 只有 1375 字符，这类话占地方还不起作用。
+| 文件 | 用途 |
+|---|---|
+| `examples/persona-minimal.md` | 一行版本，验证链路 |
+| `examples/persona-full.md` | 完整结构（身份 / 说话 / 习惯 / 边界） |
+| `examples/persona-coder.md` | 程序员向，含排错顺序 |
+
+用脚本的 `[5]` 直接套用，拖进去就行。
 
 ---
 
 ## 搭配模型
 
-`USER.md` 管人格，`config.yaml` 管模型。两者独立。
+`USER.md` 管人格，`config.yaml` 管模型，两者完全独立。
 
-### 模型配置在哪
-
-```
-%LOCALAPPDATA%\hermes\config.yaml
-```
-
-关键段：
+### 配置位置
 
 ```yaml
+# %LOCALAPPDATA%\hermes\config.yaml
 model:
-  default: "deepseek-flash"        # 默认模型
-  provider: "deepseek"              # provider 选择
+  default: "deepseek-flash"
+  provider: "deepseek"
   base_url: "https://api.deepseek.com/v1"
 ```
 
-### provider 支持列表（config.yaml 注释里的原文）
+### 23 个 provider
 
-| provider | 需要什么 | 说明 |
-|---|---|---|
-| `auto` | — | 从凭据自动检测（默认） |
-| `openrouter` | `OPENROUTER_API_KEY` / `OPENAI_API_KEY` | 聚合网关 |
-| `nous` / `nous-api` | OAuth 或 `NOUS_API_KEY` | Nous Portal |
-| `anthropic` | `ANTHROPIC_API_KEY` | Claude 直连 |
-| `openai-codex` | `hermes auth` | OpenAI Codex |
-| `copilot` | `GITHUB_TOKEN` | GitHub Copilot / Models |
-| `gemini` | `GOOGLE_API_KEY` / `GEMINI_API_KEY` | Google AI Studio |
-| `zai` | `GLM_API_KEY` | 智谱 GLM |
-| `kimi-coding` | `KIMI_API_KEY` | Kimi / Moonshot |
-| `minimax` / `minimax-cn` | 对应 API key | MiniMax 国际 / 国内 |
-| `huggingface` | `HF_TOKEN` | HF Inference |
-| `nvidia` | `NVIDIA_API_KEY` | NVIDIA NIM |
-| `deepinfra` | `DEEPINFRA_API_KEY` | DeepInfra |
-| `ai-gateway` | `AI_GATEWAY_API_KEY` | Vercel AI Gateway |
-| `azure-foundry` | API key 或 Entra ID | Azure OpenAI |
-| `lmstudio` | 可选 `LM_API_KEY` | 默认 `http://127.0.0.1:1234/v1` |
-| **`custom`** | `base_url` | **任意 OpenAI 兼容端点** |
+| provider | 需要的凭据 |
+|---|---|
+| `auto` | — 从已有凭据自动检测 |
+| `openrouter` | `OPENROUTER_API_KEY` / `OPENAI_API_KEY` |
+| `nous` / `nous-api` | OAuth 或 `NOUS_API_KEY` |
+| `anthropic` | `ANTHROPIC_API_KEY` |
+| `openai-codex` | `hermes auth` |
+| `copilot` | `GITHUB_TOKEN` |
+| `gemini` | `GOOGLE_API_KEY` / `GEMINI_API_KEY` |
+| `zai` | `GLM_API_KEY` |
+| `kimi-coding` | `KIMI_API_KEY` |
+| `minimax` / `minimax-cn` | 对应 key |
+| `huggingface` | `HF_TOKEN` |
+| `nvidia` | `NVIDIA_API_KEY` |
+| `xiaomi` | `XIAOMI_API_KEY` |
+| `arcee` | `ARCEEAI_API_KEY` |
+| `ollama-cloud` | `OLLAMA_API_KEY` |
+| `deepinfra` | `DEEPINFRA_API_KEY` |
+| `kilocode` | `KILOCODE_API_KEY` |
+| `ai-gateway` | `AI_GATEWAY_API_KEY` |
+| `azure-foundry` | API key 或 Entra ID |
+| `lmstudio` | 可选 `LM_API_KEY` |
+| **`custom`** | `base_url` — **任意 OpenAI 兼容端点** |
+
+完整说明见 [`docs/model-setup.md`](docs/model-setup.md)。
 
 ### 接本地模型
-
-`custom` 是接 llama.cpp / vLLM / Ollama 的正确姿势：
 
 ```yaml
 model:
@@ -198,119 +381,54 @@ model:
   base_url: "http://127.0.0.1:8440/v1"
 ```
 
-启动 llama-server 时要对齐三件事：
+三处必须对齐：
 
-1. **模型别名**（`--alias`）要和 `default` 一致
-2. **上下文长度**（`-c`）要够，且注意 `--parallel N` 会切分上下文
-3. **端口**要和 `base_url` 对上
+1. `--alias` 和 `default` 一致
+2. `--parallel 1`（`--parallel N` 会切分 `-c` 上下文）
+3. 端口和 `base_url` 一致
 
-> 本地模型接 Hermes 的完整参数（显存实测、上下文切分坑、进程被 WSL 回收）
-> 见姊妹项目 [DeepSeek9B-8GB-VRAM-Setup](https://github.com/Alexander390370/DeepSeek9B-8GB-VRAM-Setup)。
-
-### 凭据在哪
-
-```
-%LOCALAPPDATA%\hermes\.env
-```
-
-实测键名（**值是 API key，不要提交**）：
-
-```ini
-DEEPSEEK_API_KEY=sk-...
-DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
-KIMI_CN_API_KEY=sk-...
-DASHSCOPE_API_KEY=sk-...
-DASHSCOPE_BASE_URL=...
-HERMES_CUSTOM_DEEPSEEK_API_KEY=sk-...
-```
+> 本地模型的显存实测、上下文取舍见姊妹项目
+> [DeepSeek9B-8GB-VRAM-Setup](https://github.com/Alexander390370/DeepSeek9B-8GB-VRAM-Setup)。
 
 ---
 
-## 其他相关文件
+## 文件都在哪
 
 ```
 %LOCALAPPDATA%\hermes\
 ├── memories\
-│   ├── USER.md           ← 角色卡（本项目主角）
-│   └── MEMORY.md         ← Agent 自己的笔记，上限 2200 字符
-├── SOUL.md               ← 底座行为准则，通常不用动
-├── config.yaml           ← 模型、显示、记忆、插件全部配置
-├── .env                  ← API 密钥
-└── auth.json             ← OAuth 凭据
+│   ├── USER.md          ← 角色卡（主角）
+│   └── MEMORY.md        ← Agent 自己的笔记
+├── SOUL.md              ← 说话风格底座（一般不动）
+├── config.yaml          ← 模型 / 显示 / 记忆 / 插件（126.9 KB）
+├── .env                 ← API 密钥
+└── auth.json            ← OAuth 凭据
 ```
 
-### `SOUL.md` 是什么
-
-```markdown
-You are Hermes Agent, built by Nous Research. Be direct: match the length of
-your reply to the weight of the ask — a one-line question gets a one-line answer,
-and finished work gets a short report of what changed, what's verified, and what's
-left, never a replay of the process. No filler ("Great question," "I'd be happy to"),
-no restating the request back...
-```
-
-这是**说话风格的底座**——负责「直接、不废话、不邀功」。
+`SOUL.md` 是**第 1 层下面的地基**——负责「直接、不废话、不邀功」这类语气。
 和 `USER.md` 不冲突：`SOUL.md` 管"怎么说"，`USER.md` 管"是谁"。
+**建议别动。**
 
-**建议不要动它**，除非你明确想改掉 Hermes 的默认语气。
-
-### 记忆的上限
-
-```yaml
-memory:
-  memory_enabled: true
-  user_profile_enabled: true
-  memory_char_limit: 2200      # MEMORY.md 上限，约 800 token
-  user_char_limit: 1375        # USER.md 上限，约 500 token
-  nudge_interval: 10           # 每 10 轮提醒 Agent 考虑写记忆
-```
-
-**`user_char_limit: 1375`** 就是角色卡的硬上限。
-超了会被截断——所以**写得精，别写得长**。
+全目录图见 [`docs/hermes-filemap.md`](docs/hermes-filemap.md)，
+三层人格与记忆调优的完整说明见 [`docs/personality-system.md`](docs/personality-system.md)。
 
 ---
 
-## 五个必须知道的坑
+## 九个实测坑
 
-### 1. `.bat` 文件必须是 GBK + CRLF
+完整版在 [`docs/troubleshooting.md`](docs/troubleshooting.md)，这里列标题：
 
-中文 `.bat` 用 UTF-8 存，`cmd.exe` 按 GBK 解码 → 中文乱码 → 括号被吞 → 报错
-`Missing closing '}'` 或 `'tepad' is not recognized`。
+1. **改了人格预设没反应** → `USER.md` 压着
+2. **`.bat` 中文全变乱码** → UTF-8 + LF 双重问题
+3. **加了 `chcp 65001` 反而更乱** → GBK 文件和 UTF-8 代码页对着干
+4. **`chcp` 切换后脚本卡住等输入** → 输入流解码失效
+5. **改完 `USER.md` 当前会话没变化** → 会话开始时注入
+6. **角色卡被自动内容塞满** → `user_profile_enabled`
+7. **`USER.md` 显示乱码** → UTF-8 内容 + cp936 终端
+8. **PowerShell 跑 bat 乱码但实际正常** → 抓取层问题
+9. **脚本卡在 `set /p`** → 自动化场景要给输入重定向
 
-**正确做法：**
-
-```powershell
-$text = Get-Content '源.bat' -Raw -Encoding UTF8
-[System.IO.File]::WriteAllText('目标.bat', $text, [System.Text.Encoding]::GetEncoding(936))
-# 同时确保 CRLF 换行
-```
-
-**不要**同时加 `chcp 65001`——那是给 UTF-8 文件用的，混用会双重乱码。
-
-### 2. 改完要开新会话
-
-`USER.md` 在会话开始时注入。改文件后**当前会话不会变**，必须新建会话。
-
-### 3. 界面预设改不动人格
-
-`display.personality` 的优先级低于 `USER.md`。
-如果改了预设没反应，**先去翻 `USER.md`**，九成是它在压制。
-
-### 4. `USER.md` 会被 Agent 自己写
-
-开了 `user_profile_enabled: true` 后，Agent 会往里追加"用户偏好"。
-一段时间后你会发现角色卡被塞满了自动生成的内容——
-**这就是要备份的原因**。
-
-### 5. 备份命名有讲究
-
-脚本用 `USER.md.bak-before-edit` / `.bak-before-clear` 这种**固定名**覆盖式备份。
-需要多版本快照时手动带时间戳：
-
-```batch
-copy "%LOCALAPPDATA%\hermes\memories\USER.md" ^
-     "%LOCALAPPDATA%\hermes\memories\USER.md.bak-%DATE:~0,4%%DATE:~5,2%%DATE:~8,2%"
-```
+> 每条都记了**误判过程**，不只是结论。踩过一次就不想再踩。
 
 ---
 
@@ -319,14 +437,17 @@ copy "%LOCALAPPDATA%\hermes\memories\USER.md" ^
 | 项 | 值 |
 |---|---|
 | 平台 | Windows 11 |
-| Hermes | Desktop（配置 `_config_version: 50`） |
-| 脚本体积 | 2,502 bytes |
+| Hermes | Desktop，`_config_version: 50` |
+| 内置人格 | 15 个 |
+| 自定义人格 | `agent.personalities`，支持简写与完整写法 |
+| `user_char_limit` | 1375（约 500 token） |
+| `memory_char_limit` | 2200（约 800 token） |
+| `nudge_interval` | 10 轮 |
+| 会话保留 | 90 天，自动剪枝 |
+| 脚本体积 | 5,129 bytes |
 | 脚本编码 | GBK (cp936) + CRLF，无 BOM |
-| 依赖 | 无（纯 cmd 内置） |
-| 验证 | 退出码 0，菜单渲染正常，1/2/3/4/q 全部可达 |
-| `config.yaml` 体积 | 126.9 KB |
-| `user_char_limit` | 1375 |
-| `memory_char_limit` | 2200 |
+| 依赖 | 无 |
+| 验证 | 退出码 0；括号 18/18 配对；9 个标签无未定义跳转；备份列表正确 |
 
 ---
 
@@ -341,13 +462,14 @@ copy "%LOCALAPPDATA%\hermes\memories\USER.md" ^
 ├── scripts/
 │   └── Hermes角色卡.bat        # 主脚本（GBK + CRLF）
 ├── examples/
-│   ├── persona-minimal.md      # 最小角色卡
-│   ├── persona-full.md         # 完整结构示例
+│   ├── persona-minimal.md      # 一行版本
+│   ├── persona-full.md         # 完整结构
 │   └── persona-coder.md        # 程序员向
 └── docs/
-    ├── hermes-filemap.md       # Hermes 目录全图
-    ├── model-setup.md          # 模型与 provider 详解
-    └── troubleshooting.md      # 排错手册
+    ├── personality-system.md   # 三层人格 + 记忆调优详解
+    ├── hermes-filemap.md       # 目录全图 + 每个文件该不该动
+    ├── model-setup.md          # 23 个 provider + 本地模型
+    └── troubleshooting.md      # 九个坑的完整复盘
 ```
 
 ---
@@ -356,4 +478,5 @@ copy "%LOCALAPPDATA%\hermes\memories\USER.md" ^
 
 本项目代码 MIT。
 
-Hermes Agent 由 [Nous Research](https://nousresearch.com) 构建，本项目只是在其配置层做工具封装，不包含 Hermes 本体。
+Hermes Agent 由 [Nous Research](https://nousresearch.com) 构建。
+本仓库只在其配置层做工具封装，**不包含、不重分发** Hermes 本体。
