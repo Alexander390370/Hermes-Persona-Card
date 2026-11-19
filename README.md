@@ -18,6 +18,29 @@
 
 ---
 
+## ⬇ 直接下载（不用 git clone）
+
+| 包 | 内容 | 大小 | 下载 |
+|---|---|---:|---|
+| **Lite 版** | 脚本 + 三份模板 + 说明，**解压双击就能用** | 4.9 KB | [**下载**](https://github.com/Alexander390370/Hermes-Persona-Card/releases/download/v1.0.0/Hermes-Persona-Card-Lite-v1.0.0.zip) |
+| 完整版 | 全部文档 + 示例 + 脚本 | 30.4 KB | [下载](https://github.com/Alexander390370/Hermes-Persona-Card/releases/download/v1.0.0/Hermes-Persona-Card-v1.0.0.zip) |
+
+**只想改人格 → 下 Lite 版就够。** 解压后：
+
+```
+Hermes角色卡.bat        ← 双击运行
+persona-minimal.md     ← 一行版本
+persona-full.md        ← 完整角色卡
+persona-coder.md       ← 写代码用
+使用说明.md
+```
+
+打开脚本按 `5`，把 `persona-full.md` 拖进窗口，开新会话就换人格了。
+
+> 全部版本见 [Releases](https://github.com/Alexander390370/Hermes-Persona-Card/releases)
+
+---
+
 ## 这个项目解决什么
 
 Hermes 有三层"人设"，**优先级从高到低**：
@@ -349,11 +372,21 @@ model:
 
 ### 4.1 拿到脚本
 
+**推荐：直接下 Lite 包**
+
+[**Hermes-Persona-Card-Lite-v1.0.0.zip**](https://github.com/Alexander390370/Hermes-Persona-Card/releases/download/v1.0.0/Hermes-Persona-Card-Lite-v1.0.0.zip)（4.9 KB）
+
+解压到任意目录，里面已经有脚本和三份模板。
+
+**或者用 git：**
+
 ```powershell
 git clone https://github.com/Alexander390370/Hermes-Persona-Card.git
 ```
 
-或者直接下载 `scripts\Hermes角色卡.bat` 这一个文件。
+**或者只要这一个文件：**
+
+从仓库里单独下载 [`scripts/Hermes角色卡.bat`](scripts/Hermes角色卡.bat)。
 
 ### 4.2 双击运行
 
