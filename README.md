@@ -13,7 +13,8 @@
 ![Hermes](https://img.shields.io/badge/Hermes-Desktop-4D6BFE?style=flat)
 ![Memory](https://img.shields.io/badge/Memory-双存储%20%C2%B7%20可调上限-0d9488?style=flat)
 ![Persona](https://img.shields.io/badge/Persona-USER.md-c2410c?style=flat)
-![Backup](https://img.shields.io/badge/Backup-自动备份-16a34a?style=flat)
+![Local](https://img.shields.io/badge/Local%204B-96K%20%C2%B7%2055--68%20tok%2Fs-16a34a?style=flat)
+![Backup](https://img.shields.io/badge/Backup-自动备份-0d9488?style=flat)
 
 ---
 
@@ -119,7 +120,7 @@ display:
 **你可以把自己喜欢的角色，装进任何模型里。**
 
 ```
-本地 9B（免费、无审查）  ┐
+本地 4B（免费、无审查）  ┐
 Kimi                     ├──→  同一个 USER.md  ──→  同一个人格
 DeepSeek                 │
 GLM / Qwen / Claude      ┘
@@ -127,6 +128,9 @@ GLM / Qwen / Claude      ┘
 
 模型负责「能力」，`USER.md` 负责「是谁」。
 显存不够就跑小模型，能力差一点，但人格一模一样。
+
+**推荐起步配置**：Qwen3.5-4B 无审查版，8GB 卡上 96K 上下文、55~68 tok/s，
+详见 [`docs/local-model.md`](docs/local-model.md)。
 
 ---
 
@@ -376,9 +380,9 @@ model:
 
 ```yaml
 model:
-  default: "deepseek9b"
+  default: "heretic4b"
   provider: "custom"
-  base_url: "http://127.0.0.1:8440/v1"
+  base_url: "http://127.0.0.1:8420/v1"
 ```
 
 三处必须对齐：
@@ -387,7 +391,25 @@ model:
 2. `--parallel 1`（`--parallel N` 会切分 `-c` 上下文）
 3. 端口和 `base_url` 一致
 
-> 本地模型的显存实测、上下文取舍见姊妹项目
+### 推荐配置：Qwen3.5-4B
+
+两个 4B 模型，8GB 卡上实测可跑：
+
+| 模型 | 别名 | 端口 | 特点 |
+|---|---|---:|---|
+| Qwopus3.5-4B-Coder-MTP | `qwopus4b` | 8400 | 有审查，**支持工具调用** |
+| Qwen3.5-4B-Heretic | `heretic4b` | 8420 | **无审查**，96K 上下文，有视觉 |
+
+| 指标 | 实测值 |
+|---|---|
+| 量化体积 | 2.52 GB（Q4_K_M） |
+| 上下文 | 96K（128K 会 OOM） |
+| 生成速度 | **55~68 tok/s** |
+| 显存占用 | 约 6.6 GB |
+
+启动脚本、参数详解、五个坑见 [`docs/local-model.md`](docs/local-model.md)。
+
+> 9B 模型的完整方案见姊妹项目
 > [DeepSeek9B-8GB-VRAM-Setup](https://github.com/Alexander390370/DeepSeek9B-8GB-VRAM-Setup)。
 
 ---
@@ -467,8 +489,9 @@ model:
 │   └── persona-coder.md        # 程序员向
 └── docs/
     ├── personality-system.md   # 三层人格 + 记忆调优详解
+    ├── local-model.md          # 本地 4B 模型部署（含启动脚本）
     ├── hermes-filemap.md       # 目录全图 + 每个文件该不该动
-    ├── model-setup.md          # 23 个 provider + 本地模型
+    ├── model-setup.md          # 23 个 provider + 本地模型接入
     └── troubleshooting.md      # 九个坑的完整复盘
 ```
 
